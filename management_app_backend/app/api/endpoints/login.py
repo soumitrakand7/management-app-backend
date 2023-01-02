@@ -63,3 +63,24 @@ def login_access_token(
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+
+@router.post("/activate-user")
+def activate_user(
+    db: Session = Depends(deps.get_db),
+    *,
+    activation_details: Dict
+) -> Any:
+    activation_code = activation_details.get('activation_code')
+    email = activation_details.get('email')
+    user_obj = crud.user.get_by_email(db=db, email=email)
+    if crud.user.activate_user(db=db, user_obj=user_obj, activation_code=activation_code):
+        token = jwt.encode({"sub": user_obj.email}, settings.SECRET_KEY)
+        response = JSONResponse({"success": 1, "session": token})
+        response.set_cookie("session", token)
+        return response
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid OTP or Validity Expired",
+        )

@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Column, String, Text
-
+from sqlalchemy import Boolean, Column, String, Text, DateTime, Float
+from datetime import datetime
 from ..db.base_class import Base
 
 
@@ -12,3 +12,6 @@ class Users(Base):
     address = Column(Text)
     hashed_password = Column(String(512))
     is_active = Column(Boolean(), default=False)
+    activation_code = Column(Float)
+    registration_date = Column(
+        DateTime, default=datetime.now())

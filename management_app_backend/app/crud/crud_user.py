@@ -1,9 +1,12 @@
 from typing import Dict, Optional, Any
 from sqlalchemy.orm import Session
 from ..core.security import get_password_hash, verify_password
-
+import random
 from .base import CRUDBase
 from ..models.user import Users
+from integrations import auth_mailer
+from datetime import datetime
+from app import crud
 
 
 class CRUDUser(CRUDBase):
@@ -18,11 +21,13 @@ class CRUDUser(CRUDBase):
             last_name=obj_in.get("last_name"),
             mobile_no=obj_in.get('mobile_no'),
             address=obj_in.get('address'),
-            is_active=True
+            is_active=False,
+            registration_date=datetime.now()
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+        crud.user.send_verification_otp(db=db, user_obj=db_obj)
         return db_obj
 
     def get_users(self, db: Session):
@@ -49,21 +54,34 @@ class CRUDUser(CRUDBase):
             update_data["hashed_password"] = hashed_password
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def get_user_details(self, db: Session, email: str):
-        user_obj = db.query(Users).filter(Users.email == email).first()
+    def get_user_details(self, db: Session, email: str) -> Dict[str, Any]:
+        user_obj = crud.user.get_by_email(email=email)
         user_dict = user_obj.__dict__
         user_dict.pop('hashed_password')
         return user_dict
 
+    def activate_user(self, db: Session, user_obj: Users, activation_code: int) -> bool:
+        minutes = divmod(
+            (datetime.now() - user_obj.registration_date).total_seconds(), 60)[0]
+        success = user_obj.activation_code == activation_code and minutes < 5
+        if success:
+            setattr(user_obj, 'is_active', True)
+            db.add(user_obj)
+            db.commit()
+            db.refresh(user_obj)
+        return success
+
+    def send_verification_otp(self, db: Session, user_obj: Users) -> Users:
+        auth_otp = random.randint(1000, 9999)
+        login_template = f"Your Login OTP is {auth_otp}. This otp is valid for 5 minutes."
+        response = auth_mailer.send_email(
+            receiver_email=user_obj.email, subject="OTP for Login", email_template=login_template)
+        setattr(user_obj, 'activation_code', auth_otp)
+        print(response)
+        db.add(user_obj)
+        db.commit()
+        db.refresh(user_obj)
+        return user_obj
+
 
 user = CRUDUser()
-
-
-# {
-#     "email": "soumitrakand3@gmail.com",
-#     "first_name": "Soumitra",
-#     "last_name": "kand",
-#     "mobile_no": "9822571054",
-#     "address": "Warje, Pune",
-#     "password": "1234"
-# }
