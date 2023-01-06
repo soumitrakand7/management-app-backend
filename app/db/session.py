@@ -9,15 +9,13 @@ sql_db = settings.SQL_DB
 
 sql_connection_str = "sqlite:///./sql_app.db"
 
-sql_connection_str = "postgresql+psycopg2://root:abcd1234@test-db.cnmbyuipzpkl.us-east-1.rds.amazonaws.com/db1"
 
-
-# sql_connection_str = "postgresql+psycopg2://{sql_user}:{sql_password}@{sql_host}/{sql_db}".format(
-#     sql_user=sql_user,
-#     sql_password=sql_password,
-#     sql_host=sql_host,
-#     sql_db=sql_db
-# )
+sql_connection_str = "postgresql+psycopg2://{sql_user}:{sql_password}@{sql_host}/{sql_db}".format(
+    sql_user=sql_user,
+    sql_password=sql_password,
+    sql_host=sql_host,
+    sql_db=sql_db
+)
 
 engine = create_engine(
     sql_connection_str, pool_pre_ping=True, future=True

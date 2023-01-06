@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, Column, String, Text, DateTime, Float
+from sqlalchemy import Boolean, Column, String, Text, DateTime, Float, ForeignKey
+from sqlalchemy.orm import relationship, backref
+
 from datetime import datetime
 from ..db.base_class import Base
 
@@ -12,6 +14,10 @@ class Users(Base):
     address = Column(Text)
     hashed_password = Column(String(512))
     is_active = Column(Boolean(), default=False)
+    profile_image_url = Column(Text)
     activation_code = Column(Float)
-    registration_date = Column(
-        DateTime, default=datetime.now())
+    registration_date = Column(DateTime, default=datetime.now())
+    plan_id = Column(String(36), ForeignKey(
+        "subscriptionplan.id", ondelete="CASCADE"))
+
+    plan = relationship("SubscriptionPlan", back_populates="user")

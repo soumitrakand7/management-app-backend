@@ -6,4 +6,5 @@ RUN pip install -r requirements.txt
 EXPOSE 8080
 COPY ./app app
 COPY ./integrations integrations
+COPY ./templates templates
 CMD ["python3", "main.py"]

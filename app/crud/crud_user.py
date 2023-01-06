@@ -7,6 +7,7 @@ from ..models.user import Users
 from integrations import auth_mailer
 from datetime import datetime
 from app import crud
+import jinja2
 
 
 class CRUDUser(CRUDBase):
@@ -22,7 +23,7 @@ class CRUDUser(CRUDBase):
             mobile_no=obj_in.get('mobile_no'),
             address=obj_in.get('address'),
             is_active=False,
-            registration_date=datetime.now()
+            profile_image_url=obj_in.get('profile_image_url')
         )
         db.add(db_obj)
         db.commit()
@@ -55,8 +56,9 @@ class CRUDUser(CRUDBase):
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def get_user_details(self, db: Session, email: str) -> Dict[str, Any]:
-        user_obj = crud.user.get_by_email(email=email)
+        user_obj = crud.user.get_by_email(db=db, email=email)
         user_dict = user_obj.__dict__
+        print(user_obj.plan.plan_name)
         user_dict.pop('hashed_password')
         return user_dict
 
@@ -72,12 +74,16 @@ class CRUDUser(CRUDBase):
         return success
 
     def send_verification_otp(self, db: Session, user_obj: Users) -> Users:
-        auth_otp = random.randint(1000, 9999)
-        login_template = f"Your Login OTP is {auth_otp}. This otp is valid for 5 minutes."
+        activation_code = random.randint(1000, 9999)
+        with open("templates/registration-successful.html", "r") as f:
+            template_string = f.read()
+        template = jinja2.Template(template_string)
+        registration_template = template.render(
+            activation_code=activation_code, first_name=user_obj.first_name)
         response = auth_mailer.send_email(
-            receiver_email=user_obj.email, subject="OTP for Login", email_template=login_template)
-        setattr(user_obj, 'activation_code', auth_otp)
+            receiver_email=user_obj.email, subject="OTP for Login", email_content=registration_template)
         print(response)
+        setattr(user_obj, 'activation_code', activation_code)
         db.add(user_obj)
         db.commit()
         db.refresh(user_obj)

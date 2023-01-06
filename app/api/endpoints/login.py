@@ -53,7 +53,9 @@ def login_access_token(
         raise HTTPException(
             status_code=400, detail="Incorrect email or password")
     elif not crud.user.is_active(user):
-        raise HTTPException(status_code=400, detail="Inactive user")
+        response = crud.user.send_verification_otp(db=db, user_obj=user)
+        raise HTTPException(
+            status_code=400, detail="Inactive user. Please activate user to login")
     access_token_expires = timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(

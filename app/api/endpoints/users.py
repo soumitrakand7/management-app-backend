@@ -34,4 +34,23 @@ def get_users(
     current_user: models.Users = Depends(deps.get_current_user)
 ) -> List:
     user_details = crud.user.get_user_details(db=db, email=current_user)
+    
     return user_details
+
+
+@router.put("/set-plan")
+def set_subscription_plan(
+    plan_dict: Dict,
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user),
+) -> Any:
+    plan_id = plan_dict.get('plan_id')
+    plan_obj = crud.sub_plan.get(db=db, plan_id=plan_id)
+    if not plan_obj:
+        raise HTTPException(
+            status_code=404,
+            detail="Invalid id or plan does not exist"
+        )
+    updated_user_obj = crud.sub_plan.set_user_plan(
+        db=db, plan_id=plan_id, user_email=current_user)
+    return updated_user_obj
