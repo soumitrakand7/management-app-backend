@@ -9,15 +9,26 @@ from datetime import datetime
 from app import crud
 import jinja2
 
+import string
+import random
+
 
 class CRUDUser(CRUDBase):
     def get_by_email(self, db: Session, *, email: str) -> Optional[Users]:
         return db.query(Users).filter(Users.email == email).first()
 
     def create(self, db: Session, *, obj_in: Dict) -> Any:
+        profile = obj_in.get('profile')
+        subscriber_group_id = obj_in.get('subscriber_group_id')
+
+        if profile != 'admin' and not crud.sub_plan.is_group_available(db=db, subscriber_group_id=subscriber_group_id):
+            return False
+
+        password = obj_in.get("password") if profile == 'admin' else ''.join(
+            random.choices(string.ascii_letters, k=7))
         db_obj = Users(
             email=obj_in.get("email"),
-            hashed_password=get_password_hash(obj_in.get("password")),
+            hashed_password=get_password_hash(password),
             full_name=obj_in.get('full_name'),
             mobile_no=obj_in.get('mobile_no'),
             address=obj_in.get('address'),
@@ -28,9 +39,7 @@ class CRUDUser(CRUDBase):
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-        profile = obj_in.get('profile')
         if profile != 'admin':
-            subscriber_group_id = obj_in.get('subscriber_group_id')
             if not crud.sub_plan.get_subscriber_group(db=db, subscriber_group_id=subscriber_group_id):
                 return False
             setattr(db_obj, 'subscriber_group_id', subscriber_group_id)
@@ -39,7 +48,8 @@ class CRUDUser(CRUDBase):
             db.commit()
             db.refresh(db_obj)
             crud.profile.create_profile(
-                db=db, user_obj=db_obj, profile_dict=obj_in, profile=profile)
+                db=db, user_obj=db_obj, profile_dict=obj_in, profile=profile, password=password)
+
         else:
             crud.user.send_verification_otp(db=db, user_obj=db_obj)
 

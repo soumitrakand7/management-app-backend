@@ -15,7 +15,7 @@ from jose import jwt
 router = APIRouter()
 
 
-@router.post("/login/auth")
+@router.post("/auth")
 def login(
     response: Response, db: Session = Depends(deps.get_db), *, form_data: Dict
 ) -> Any:
@@ -37,7 +37,7 @@ def login(
     return response
 
 
-@router.post("/login/access-token")
+@router.post("/access-token")
 def login_access_token(
     response: Response,
     db: Session = Depends(deps.get_db),
