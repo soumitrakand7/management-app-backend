@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from sqlalchemy.orm import Session
 from ..core.security import get_password_hash, verify_password
 import random
@@ -14,24 +14,40 @@ class CRUDUser(CRUDBase):
     def get_by_email(self, db: Session, *, email: str) -> Optional[Users]:
         return db.query(Users).filter(Users.email == email).first()
 
-    def create(self, db: Session, *, obj_in: Dict) -> Users:
+    def create(self, db: Session, *, obj_in: Dict) -> Any:
         db_obj = Users(
             email=obj_in.get("email"),
             hashed_password=get_password_hash(obj_in.get("password")),
-            first_name=obj_in.get("first_name"),
-            last_name=obj_in.get("last_name"),
+            full_name=obj_in.get('full_name'),
             mobile_no=obj_in.get('mobile_no'),
             address=obj_in.get('address'),
             is_active=False,
-            profile_image_url=obj_in.get('profile_image_url')
+            profile_image_url=obj_in.get('profile_image_url'),
+            profile=obj_in.get('profile')
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-        crud.user.send_verification_otp(db=db, user_obj=db_obj)
-        return db_obj
+        profile = obj_in.get('profile')
+        if profile != 'admin':
+            subscriber_group_id = obj_in.get('subscriber_group_id')
+            if not crud.sub_plan.get_subscriber_group(db=db, subscriber_group_id=subscriber_group_id):
+                return False
+            setattr(db_obj, 'subscriber_group_id', subscriber_group_id)
+            setattr(db_obj, 'is_active', True)
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+            crud.profile.create_profile(
+                db=db, user_obj=db_obj, profile_dict=obj_in, profile=profile)
+        else:
+            crud.user.send_verification_otp(db=db, user_obj=db_obj)
 
-    def get_users(self, db: Session):
+        user_dict = db_obj.__dict__
+        user_dict.pop('hashed_password')
+        return user_dict
+
+    def get_users(self, db: Session) -> List[Users]:
         db_users = db.query(Users).all()
         return db_users
 
@@ -79,7 +95,7 @@ class CRUDUser(CRUDBase):
             template_string = f.read()
         template = jinja2.Template(template_string)
         registration_template = template.render(
-            activation_code=activation_code, first_name=user_obj.first_name)
+            activation_code=activation_code, full_name=user_obj.full_name)
         response = auth_mailer.send_email(
             receiver_email=user_obj.email, subject="OTP for Login", email_content=registration_template)
         print(response)

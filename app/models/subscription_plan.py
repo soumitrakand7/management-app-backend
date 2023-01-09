@@ -11,5 +11,3 @@ class SubscriptionPlan(Base):
     min_members = Column(Float)
     max_members = Column(Float)
     price = Column(Float)
-
-    user = relationship("Users", back_populates="plan")

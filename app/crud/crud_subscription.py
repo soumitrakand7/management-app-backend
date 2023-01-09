@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app import crud
 
 from app.crud.base import CRUDBase
-from app.models import SubscriptionPlan, Users
+from app.models import SubscriptionPlan, Users, SubscriberGroup
 
 
 class CRUDSubscriptions(CRUDBase):
@@ -30,13 +30,13 @@ class CRUDSubscriptions(CRUDBase):
             print(plan.user.email)
         return sub_plans
 
-    def set_user_plan(self, db: Session, user_email: str, plan_id: str) -> Users:
-        user_obj = crud.user.get_by_email(db=db, email=user_email)
-        setattr(user_obj, 'plan_id', plan_id)
-        db.add(user_obj)
-        db.commit()
-        db.refresh(user_obj)
-        return user_obj
+    def create_subscription_group(self, db: Session, admin_user_obj: Users):
+        # admin_profile = crud.user
+
+        pass
+
+    def get_subscriber_group(self, db: Session, subscriber_group_id: str):
+        return db.query(SubscriberGroup).get(id=subscriber_group_id)
 
 
 sub_plan = CRUDSubscriptions()
