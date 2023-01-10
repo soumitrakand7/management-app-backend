@@ -1,1 +1,1 @@
-from .mailer import auth_mailer
+from .mails import mailer

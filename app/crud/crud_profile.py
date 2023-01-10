@@ -4,7 +4,7 @@ from .base import CRUDBase
 from app.models import Users, StaffMember, GuestMember, FamilyMember
 from .base import CRUDBase
 from ..models.user import Users
-from integrations import auth_mailer
+from integrations import mailer
 import jinja2
 from app import crud
 
@@ -60,7 +60,7 @@ class CRUDProfile(CRUDBase):
             profile_email=user_obj.email,
             password=password
         )
-        response = auth_mailer.send_email(
+        response = mailer.send_email(
             receiver_email=user_obj.email, subject="Activation of Account", email_content=registration_template)
         print(response)
         return response

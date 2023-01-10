@@ -23,4 +23,4 @@ class Mailer:
             return result
 
 
-auth_mailer = Mailer()
+mailer = Mailer()

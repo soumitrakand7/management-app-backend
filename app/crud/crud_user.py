@@ -4,7 +4,7 @@ from ..core.security import get_password_hash, verify_password
 import random
 from .base import CRUDBase
 from ..models.user import Users
-from integrations import auth_mailer
+from integrations import mailer
 from datetime import datetime
 from app import crud
 import jinja2
@@ -106,7 +106,7 @@ class CRUDUser(CRUDBase):
         template = jinja2.Template(template_string)
         registration_template = template.render(
             activation_code=activation_code, full_name=user_obj.full_name)
-        response = auth_mailer.send_email(
+        response = mailer.send_email(
             receiver_email=user_obj.email, subject="OTP for Login", email_content=registration_template)
         print(response)
         setattr(user_obj, 'activation_code', activation_code)

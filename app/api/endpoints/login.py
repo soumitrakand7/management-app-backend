@@ -8,9 +8,10 @@ from sqlalchemy.orm import Session
 from ... import crud
 from .. import deps
 from ...core import security
+import jinja2
 from ...core.config import settings
 from jose import jwt
-
+import random
 
 router = APIRouter()
 
@@ -86,3 +87,42 @@ def activate_user(
             status_code=403,
             detail="Invalid OTP or Validity Expired",
         )
+
+
+@router.post("/send-forgot-password-otp")
+def send_forgot_paasword_otp(
+    *,
+    db: Session = Depends(deps.get_db),
+    email: Dict
+) -> Any:
+    affiliate_obj = crud.user.get_by_email(db=db, email=email["email"])
+    if affiliate_obj is None:
+        raise HTTPException(
+            status_code=400,
+            detail="The username does not exists",
+        )
+    reset_code = random.randint(1000, 9999)
+
+    crud.reset_password_request.create(
+        db, email=email["email"], reset_code=reset_code)
+
+
+@router.post("/reset-password")
+def reset_password(
+    *,
+    db: Session = Depends(deps.get_db),
+    reset_details: Dict,
+) -> Any:
+    email = reset_details["email"]
+    reset_code = reset_details["reset_code"]
+    new_password = reset_details["new_password"]
+    is_valid = crud.reset_password_request.validate_reset_code(
+        db, email=email, reset_code=reset_code
+    )
+    if not is_valid:
+        return {"status": False, "msg": "Invalid / Expired Code"}
+    else:
+        user_obj = crud.user.get_by_email(db, email=email)
+        crud.user.update(db, db_obj=user_obj, obj_in={
+            "password": new_password})
+        return {"status": True, "msg": "Password Updated Successfully"}
