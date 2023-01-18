@@ -41,3 +41,13 @@ def get_subscriber_group(
     subscriber_group = crud.sub_plan.get_subscriber_group_by_user(
         db=db, user_email=current_user)
     return subscriber_group
+
+
+@router.get("/get-members")
+def get_members(
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user),
+):
+    group_members = crud.sub_plan.get_group_users(
+        db=db, user_email=current_user)
+    return group_members

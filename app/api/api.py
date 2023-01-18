@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints import (users, login, subscription_plan, subscriber)
+from .endpoints import (users, login, subscription_plan, subscriber, profiles)
 
 api_router = APIRouter()
 
@@ -11,3 +11,5 @@ api_router.include_router(
     subscription_plan.router, prefix="/subscriptions", tags=["subscription-plan"])
 api_router.include_router(
     subscriber.router, prefix="/subscriber", tags=["subscriber"])
+api_router.include_router(
+    profiles.router, prefix="/profile", tags=["profiles"])

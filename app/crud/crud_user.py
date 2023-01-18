@@ -84,7 +84,6 @@ class CRUDUser(CRUDBase):
     def get_user_details(self, db: Session, email: str) -> Dict[str, Any]:
         user_obj = crud.user.get_by_email(db=db, email=email)
         user_dict = user_obj.__dict__
-        print(user_obj.plan.plan_name)
         user_dict.pop('hashed_password')
         return user_dict
 
@@ -114,6 +113,10 @@ class CRUDUser(CRUDBase):
         db.commit()
         db.refresh(user_obj)
         return user_obj
+
+    def is_admin(self, db: Session, user_email: str) -> bool:
+        user_obj = self.get_by_email(db=db, email=user_email)
+        return user_obj.profile == 'admin'
 
 
 user = CRUDUser()

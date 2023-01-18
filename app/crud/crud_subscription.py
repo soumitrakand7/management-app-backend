@@ -43,6 +43,11 @@ class CRUDSubscriptions(CRUDBase):
         db.add(subscriber_grp_obj)
         db.commit()
         db.refresh(subscriber_grp_obj)
+
+        setattr(admin_profile, 'subscriber_group_id', subscriber_grp_obj.id)
+        db.add(admin_profile)
+        db.commit()
+        db.refresh(admin_profile)
         return subscriber_grp_obj
 
     def get_subscriber_group(self, db: Session, subscriber_group_id: str):
@@ -56,6 +61,18 @@ class CRUDSubscriptions(CRUDBase):
         subscriber_group_obj = self.get_subscriber_group(
             db=db, subscriber_group_id=subscriber_group_id)
         return subscriber_group_obj.member_count < subscriber_group_obj.subscription_plan.max_members
+
+    def get_group_users(self, db: Session, user_email: str):
+        user_obj = crud.user.get_by_email(db=db, email=user_email)
+        members = db.query(Users).filter(
+            Users.subscriber_group_id == user_obj.subscriber_group_id).all()
+        members_list = []
+        for user in members:
+            member_dict = user.__dict__
+            members_list.pop('hashed_password')
+            members_list.append(member_dict)
+
+        return members_list
 
 
 sub_plan = CRUDSubscriptions()
