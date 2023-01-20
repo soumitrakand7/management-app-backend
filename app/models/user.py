@@ -9,7 +9,7 @@ class Users(Base):
     email = Column(String(32), unique=True, index=True,
                    primary_key=True, nullable=False)
     full_name = Column(String(64), nullable=False, index=True)
-    mobile_no = Column(String(10), index=True, nullable=False)
+    mobile_no = Column(String(10), index=True, nullable=True)
     address = Column(Text)
     hashed_password = Column(String(512))
     is_active = Column(Boolean(), default=False)
@@ -17,6 +17,9 @@ class Users(Base):
     activation_code = Column(Float)
     registration_date = Column(DateTime, default=datetime.now())
     profile = Column(String(36), index=True)  # admin / staff / guest / family
+    bank_ifsc = Column(Text)
+    bank_account_no = Column(Text)
+
     subscriber_group_id = Column(String(36), ForeignKey(
         "subscribergroup.id"), nullable=True)
 

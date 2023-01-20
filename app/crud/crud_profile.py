@@ -6,41 +6,77 @@ from .base import CRUDBase
 from ..models.user import Users
 from integrations import mailer
 import jinja2
+from ..core.security import get_password_hash, verify_password
+
 from app import crud
+
+import string
+import random
 
 
 class CRUDProfile(CRUDBase):
-    def create_profile(self, db: Session, user_obj: Users, profile: str, profile_dict: Dict, password: str):
+    def create(self, db: Session, obj_in: Dict, admin_obj: Users):
+        profile = obj_in.get('profile')
+        subscriber_group_id = admin_obj.subscriber_group_id
+        password = ''.join(random.choices(string.ascii_letters, k=7))
+
+        db_obj = Users(
+            email=obj_in.get("email"),
+            hashed_password=get_password_hash(password),
+            full_name=obj_in.get('full_name'),
+            mobile_no=obj_in.get('mobile_no'),
+            address=obj_in.get('address'),
+            is_active=True,
+            profile_image_url=obj_in.get('profile_image_url'),
+            profile=profile,
+            bank_ifsc=obj_in.get('bank_ifsc'),
+            bank_account_no=obj_in.get('bank_account_no'),
+            subscriber_group_id=subscriber_group_id
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+
         if profile == 'staff':
             staff_obj = StaffMember(
-                user_email=user_obj.email,
-                designation=profile_dict.get('designation'),
-                job_details=profile_dict.get('job_details')
+                user_email=db_obj.email,
+                designation=obj_in.get('designation'),
+                job_details=obj_in.get('job_details')
             )
             db.add(staff_obj)
             db.commit()
             db.refresh(staff_obj)
+
         elif profile == 'guest':
             guest_obj = GuestMember(
-                user_email=user_obj.email,
-                relation_tag=profile_dict.get('relation_tag')
+                user_email=db_obj.email,
+                relation_tag=obj_in.get('relation_tag')
             )
             db.add(guest_obj)
             db.commit()
             db.refresh(guest_obj)
+
         elif profile == 'family':
+            parent_email = ""
+            child_email = ""
+            relation_tag = obj_in.get('relation_tag')
+            if relation_tag == 'Dad' or relation_tag == 'Mom':
+                parent_email = obj_in.get('email')
+                child_email = admin_obj.email
+            elif relation_tag == 'Son' or relation_tag == 'Daughter':
+                parent_email = admin_obj.email
+                child_email = obj_in.get('email')
             family_member_obj = FamilyMember(
-                parent_email=profile_dict.get('parent_email'),
-                child_email=user_obj.email,
-                subscriber_group_id=user_obj.subscriber_group_id
+                parent_email=parent_email,
+                child_email=child_email,
+                subscriber_group_id=subscriber_group_id,
+                relation_tag=obj_in.get('relation_tag')
             )
             db.add(family_member_obj)
             db.commit()
             db.refresh(family_member_obj)
 
-        subscriber_group = user_obj.subscriber_group
-        admin_obj = subscriber_group.admin
-        print(admin_obj.full_name)
+        subscriber_group = db_obj.subscriber_group
         updated_member_count = subscriber_group.member_count + 1
         setattr(subscriber_group, 'member_count', updated_member_count)
         db.add(subscriber_group)
@@ -48,8 +84,11 @@ class CRUDProfile(CRUDBase):
         db.refresh(subscriber_group)
 
         crud.profile.send_activation_email(
-            db=db, password=password, admin_obj=admin_obj, user_obj=user_obj)
-        return True
+            db=db, password=password, admin_obj=admin_obj, user_obj=db_obj)
+
+        user_dict = db_obj.__dict__
+        user_dict.pop('hashed_password')
+        return user_dict
 
     def send_activation_email(self, db: Session, admin_obj: Users, user_obj: Users, password: str):
         with open("templates/invite-member.html", "r") as f:

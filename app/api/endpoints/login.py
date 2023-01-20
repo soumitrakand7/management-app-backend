@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import Response, JSONResponse
 from sqlalchemy.orm import Session
-from ... import crud
+from ... import crud, models
 from .. import deps
 from ...core import security
 import jinja2
@@ -95,8 +95,8 @@ def send_forgot_paasword_otp(
     db: Session = Depends(deps.get_db),
     email: Dict
 ) -> Any:
-    affiliate_obj = crud.user.get_by_email(db=db, email=email["email"])
-    if affiliate_obj is None:
+    user_obj = crud.user.get_by_email(db=db, email=email["email"])
+    if user_obj is None:
         raise HTTPException(
             status_code=400,
             detail="The username does not exists",
@@ -107,22 +107,48 @@ def send_forgot_paasword_otp(
         db, email=email["email"], reset_code=reset_code)
 
 
-@router.post("/reset-password")
-def reset_password(
+@router.post("/validate-reset-password-otp")
+def validate_otp(
     *,
     db: Session = Depends(deps.get_db),
     reset_details: Dict,
 ) -> Any:
     email = reset_details["email"]
     reset_code = reset_details["reset_code"]
-    new_password = reset_details["new_password"]
     is_valid = crud.reset_password_request.validate_reset_code(
         db, email=email, reset_code=reset_code
     )
     if not is_valid:
-        return {"status": False, "msg": "Invalid / Expired Code"}
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid / Expired Code"
+        )
+        # return {"status": False, "msg": }
     else:
-        user_obj = crud.user.get_by_email(db, email=email)
-        crud.user.update(db, db_obj=user_obj, obj_in={
-            "password": new_password})
-        return {"status": True, "msg": "Password Updated Successfully"}
+        token = jwt.encode(
+            {"sub": reset_details["email"]}, settings.SECRET_KEY)
+        response = JSONResponse({"success": 1, "session": token})
+        response.set_cookie("session", token)
+        return response
+
+     # user_obj = crud.user.get_by_email(db, email=email)
+        # crud.user.update(db, db_obj=user_obj, obj_in={
+        #     "password": new_password})
+        # return {"status": True, "msg": "Password Updated Successfully"}
+
+
+@router.post("/reset-password")
+def reset_password(
+    *,
+    db: Session = Depends(deps.get_db),
+    reset_details: Dict,
+    current_user: models.Users = Depends(deps.get_current_user)
+):
+    user = crud.user.get_by_email(db=db, email=current_user)
+    if not user:
+        raise HTTPException(
+            status_code=401, detail="Incorrect email")
+    user_obj = crud.user.get_by_email(db, email=current_user)
+    crud.user.update(db, db_obj=user_obj, obj_in={
+        "password": reset_details.get('new_password')})
+    return {"status": True, "msg": "Password Updated Successfully"}

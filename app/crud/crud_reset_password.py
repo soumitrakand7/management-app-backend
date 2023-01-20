@@ -17,7 +17,7 @@ class CRUDResetPasswordRequest(CRUDBase):
         reset_pass_obj = ResetPasswordRequest(
             user_email=email,
             reset_code=reset_code,
-            validity=datetime.datetime.now() + datetime.timedelta(minutes=30)
+            validity=datetime.datetime.now() + datetime.timedelta(hours=30)
         )
         db.add(reset_pass_obj)
         db.commit()

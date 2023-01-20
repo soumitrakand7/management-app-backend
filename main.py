@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from app.api.api import api_router
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = FastAPI(
     title="Management App"
@@ -15,3 +16,5 @@ app.include_router(api_router, prefix="/api/v1")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+
+sched = BackgroundScheduler()

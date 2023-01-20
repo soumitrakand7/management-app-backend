@@ -11,6 +11,7 @@ class FamilyMember(Base):
     child_email = Column(String(36), ForeignKey("users.email"), nullable=False)
     parent_email = Column(String(36), ForeignKey("users.email"))
     subscriber_group_id = Column(String(36), nullable=False)
+    relation_tag = Column(String(32), index=True)
 
     child = relationship("Users", foreign_keys=[child_email])
     parent = relationship("Users", foreign_keys=[parent_email])

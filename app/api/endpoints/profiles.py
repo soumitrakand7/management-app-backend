@@ -11,6 +11,33 @@ from .. import deps
 router = APIRouter()
 
 
+@router.post("/create")
+def create_profile(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_in: Dict,
+    current_user: models.Users = Depends(deps.get_current_user)
+) -> Any:
+    """
+    Create new profile.
+    """
+    user = crud.user.get_by_email(db, email=user_in.get("email"))
+    if user:
+        raise HTTPException(
+            status_code=400,
+            detail="The user with this username already exists in the system.",
+        )
+    user_obj = crud.user.get_by_email(db=db, email=current_user)
+
+    if not crud.sub_plan.is_group_available(db=db, subscriber_group_id=user_obj.subscriber_group_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Subscription group full",
+        )
+    success = crud.profile.create(db=db, obj_in=user_in, admin_obj=user_obj)
+    return success
+
+
 @router.get("/get-family-tree")
 def get_family_tree(
     db: Session = Depends(deps.get_db),

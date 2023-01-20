@@ -18,40 +18,23 @@ class CRUDUser(CRUDBase):
         return db.query(Users).filter(Users.email == email).first()
 
     def create(self, db: Session, *, obj_in: Dict) -> Any:
-        profile = obj_in.get('profile')
-        subscriber_group_id = obj_in.get('subscriber_group_id')
-
-        if profile != 'admin' and not crud.sub_plan.is_group_available(db=db, subscriber_group_id=subscriber_group_id):
-            return False
-
-        password = obj_in.get("password") if profile == 'admin' else ''.join(
-            random.choices(string.ascii_letters, k=7))
         db_obj = Users(
             email=obj_in.get("email"),
-            hashed_password=get_password_hash(password),
+            hashed_password=get_password_hash(obj_in.get('password')),
             full_name=obj_in.get('full_name'),
             mobile_no=obj_in.get('mobile_no'),
             address=obj_in.get('address'),
             is_active=False,
             profile_image_url=obj_in.get('profile_image_url'),
-            profile=obj_in.get('profile')
+            profile='admin',
+            bank_ifsc=obj_in.get('bank_ifsc'),
+            bank_account_no=obj_in.get('bank_account_no')
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-        if profile != 'admin':
-            if not crud.sub_plan.get_subscriber_group(db=db, subscriber_group_id=subscriber_group_id):
-                return False
-            setattr(db_obj, 'subscriber_group_id', subscriber_group_id)
-            setattr(db_obj, 'is_active', True)
-            db.add(db_obj)
-            db.commit()
-            db.refresh(db_obj)
-            crud.profile.create_profile(
-                db=db, user_obj=db_obj, profile_dict=obj_in, profile=profile, password=password)
 
-        else:
-            crud.user.send_verification_otp(db=db, user_obj=db_obj)
+        crud.user.send_verification_otp(db=db, user_obj=db_obj)
 
         user_dict = db_obj.__dict__
         user_dict.pop('hashed_password')
@@ -90,7 +73,7 @@ class CRUDUser(CRUDBase):
     def activate_user(self, db: Session, user_obj: Users, activation_code: int) -> bool:
         minutes = divmod(
             (datetime.now() - user_obj.registration_date).total_seconds(), 60)[0]
-        success = user_obj.activation_code == activation_code and minutes < 5
+        success = user_obj.activation_code == activation_code
         if success:
             setattr(user_obj, 'is_active', True)
             db.add(user_obj)
