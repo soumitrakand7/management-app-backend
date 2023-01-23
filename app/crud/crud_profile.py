@@ -36,7 +36,7 @@ class CRUDProfile(CRUDBase):
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-
+        print(password)
         if profile == 'staff':
             staff_obj = StaffMember(
                 user_email=db_obj.email,
