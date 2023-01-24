@@ -10,5 +10,6 @@ class StaffMember(Base):
     user_email = Column(String(36), ForeignKey("users.email"))
     designation = Column(String(24), index=True, nullable=False)
     job_details = Column(Text)
+    employment_status = Column(String(24))  # employed / unemployed
 
     user = relationship("Users", foreign_keys=[user_email])

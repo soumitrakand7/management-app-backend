@@ -7,3 +7,4 @@ from .guest_member import GuestMember
 from .reset_password_request import ResetPasswordRequest
 from .scheduler_log import SchedulerLog
 from .staff_attendance import StaffAttendance
+from .staff_absences import StaffAbsence

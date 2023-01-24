@@ -6,7 +6,10 @@ from ...db.session import create_scheduler_log
 
 from sqlalchemy.orm import Session
 from ... import crud, models
+from ...models import StaffMember, StaffAttendance, StaffAbsence
 from .. import deps
+
+from datetime import datetime
 
 
 router = APIRouter()
@@ -62,3 +65,41 @@ def get_attendance_status(
     status = crud.staff_attendance.get_attendance_status(
         db=db, user_email=current_user)
     return {"attendance_status": status}
+
+
+@router.get("/get-absences")
+def get_attendance_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user)
+):
+    user_obj = crud.user.get_by_email(db=db, email=current_user)
+    if user_obj.profile != 'staff':
+        raise HTTPException(
+            status_code=403,
+            detail="Incorrect Profile",
+        )
+    absences = crud.staff_attendance.get_absences(
+        db=db, user_email=current_user)
+    return absences
+
+
+@create_scheduler_log(job_name="Check Abscences")
+def check_abscences(
+    *,
+    db: Session = Depends(deps.get_db),
+):
+    print("HERE ###")
+    staff_members = db.query(StaffMember).filter(
+        StaffMember.employment_status == 'employed').all()
+    for member in staff_members:
+        staff_att_obj = db.query(StaffAttendance).filter(
+            StaffAttendance.staff_id == member.id).order_by(StaffAttendance.date.desc()).first()
+        if staff_att_obj.date != datetime.now().date:
+            staff_absence_obj = StaffAbsence(
+                staff_id=member.id,
+                abscence_date=datetime.now().date
+            )
+            db.add(staff_absence_obj)
+            db.commit()
+            db.refresh(staff_absence_obj)

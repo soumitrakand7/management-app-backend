@@ -16,7 +16,7 @@ class CRUDSchedulerLog(CRUDBase):
         )
         db.add(scheduler_log_obj)
         db.commit()
-
+        db.refresh(scheduler_log_obj)
         return scheduler_log_obj
 
 

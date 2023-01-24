@@ -12,4 +12,5 @@ class StaffAttendance(Base):
     out_time = Column(Time)
     date = Column(Date)
     status = Column(String(32))
+
     staff_member = relationship("StaffMember", foreign_keys=[staff_id])

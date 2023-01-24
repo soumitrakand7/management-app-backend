@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.crud.base import CRUDBase
-from app.models import StaffAttendance, StaffMember
+from app.models import StaffAttendance, StaffMember, StaffAbsence
 
 
 class CRUDStaffAttendance(CRUDBase):
@@ -44,10 +44,12 @@ class CRUDStaffAttendance(CRUDBase):
         db.refresh(staff_attendance_obj)
         return staff_attendance_obj
 
-    def get_abscences(self, db: Session, user_email: str):
+    def get_absences(self, db: Session, user_email: str):
         staff_member_obj = self.get(db=db, user_email=user_email)
-        staff_attedances = db.query(StaffAttendance).filter(
-            StaffAttendance.staff_id == staff_member_obj.id).all()
+        member_absences = db.query(StaffAbsence.abscence_date).filter(
+            StaffAbsence.staff_id == staff_member_obj.id).all()
+        print(member_absences)
+        return member_absences
 
     def get_attendance_status(self, db: Session, user_email: str):
         staff_member_obj = self.get(db=db, user_email=user_email)
