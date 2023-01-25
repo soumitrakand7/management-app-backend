@@ -62,9 +62,9 @@ def get_attendance_status(
             status_code=403,
             detail="Incorrect Profile",
         )
-    status = crud.staff_attendance.get_attendance_status(
+    attendance = crud.staff_attendance.get_attendance_status(
         db=db, user_email=current_user)
-    return {"attendance_status": status}
+    return attendance
 
 
 @router.get("/get-absences")

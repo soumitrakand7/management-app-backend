@@ -8,8 +8,8 @@ from ..db.base_class import Base
 class StaffAttendance(Base):
     id = Column(String(36), primary_key=True, default=default_pk)
     staff_id = Column(String(36), ForeignKey("staffmember.id"))
-    in_time = Column(Time)
-    out_time = Column(Time)
+    check_in_time = Column(Time)
+    check_out_time = Column(Time)
     date = Column(Date)
     status = Column(String(32))
 

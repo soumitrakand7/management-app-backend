@@ -103,8 +103,9 @@ def send_forgot_paasword_otp(
         )
     reset_code = random.randint(1000, 9999)
 
-    crud.reset_password_request.create(
+    response = crud.reset_password_request.create(
         db, email=email["email"], reset_code=reset_code)
+    return response
 
 
 @router.post("/validate-reset-password-otp")
