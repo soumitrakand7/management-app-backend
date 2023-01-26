@@ -1,10 +1,11 @@
-FROM python:3.8
-ADD requirements.txt /requirements.txt
-ADD main.py /main.py
-ADD okteto-stack.yaml /okteto-stack.yaml
+FROM python:3.8-slim
+
+WORKDIR /app
+
+COPY ./requirements.txt requirements.txt
+
+RUN pip install --upgrade pip
+
 RUN pip install -r requirements.txt
-EXPOSE 8080
-COPY ./app app
-COPY ./integrations integrations
-COPY ./templates templates
-CMD ["python3", "main.py"]
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
