@@ -84,6 +84,35 @@ def get_attendance_status(
     return absences
 
 
+@router.post("/create-task")
+def create_task(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user),
+    task_dict: Dict
+):
+    user_obj = crud.user.get_by_email(db=db, email=current_user)
+    if user_obj.profile != 'staff':
+        raise HTTPException(
+            status_code=403,
+            detail="Incorrect Profile",
+        )
+    task_obj = crud.staff_tasks.create(
+        db=db, obj_in=task_dict, user_email=current_user)
+    return task_obj
+
+
+@router.get("/get-tasks")
+def get_tasks(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user),
+):
+    staff_tasks = crud.staff_tasks.get_all_tasks(
+        db=db, user_email=current_user)
+    return staff_tasks
+
+
 @create_scheduler_log(job_name="Check Abscences")
 def check_abscences(
     *,
