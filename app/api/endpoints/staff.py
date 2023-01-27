@@ -92,13 +92,13 @@ def create_task(
     task_dict: Dict
 ):
     user_obj = crud.user.get_by_email(db=db, email=current_user)
-    if user_obj.profile != 'staff':
+    if user_obj.profile != 'admin':
         raise HTTPException(
             status_code=403,
-            detail="Incorrect Profile",
+            detail="Insufficient Rights",
         )
     task_obj = crud.staff_tasks.create(
-        db=db, obj_in=task_dict, user_email=current_user)
+        db=db, obj_in=task_dict)
     return task_obj
 
 

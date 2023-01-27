@@ -41,7 +41,8 @@ class CRUDProfile(CRUDBase):
             staff_obj = StaffMember(
                 user_email=db_obj.email,
                 designation=obj_in.get('designation'),
-                job_details=obj_in.get('job_details')
+                job_details=obj_in.get('job_details'),
+                employment_status='Employed'
             )
             db.add(staff_obj)
             db.commit()
