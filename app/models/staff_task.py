@@ -14,3 +14,9 @@ class StaffTask(Base):
     valid_from = Column(DateTime)
     priority = Column(String(24), nullable=False)
     status = Column(String(36))  # Active / Cancelled / Completed / Expired
+
+    subscriber_group_id = Column(String(36), ForeignKey(
+        "subscribergroup.id"))
+
+    subscriber_group = relationship(
+        "SubscriberGroup", foreign_keys=[subscriber_group_id])

@@ -8,7 +8,7 @@ from app.models import StaffAttendance, StaffMember, StaffAbsence
 
 
 class CRUDStaffAttendance(CRUDBase):
-    def get(self, db: Session, user_email: str):
+    def get(self, db: Session, user_email: str) -> StaffMember:
         staff_member_obj = db.query(StaffMember).filter(
             StaffMember.user_email == user_email).first()
         return staff_member_obj

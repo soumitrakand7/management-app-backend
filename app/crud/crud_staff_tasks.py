@@ -1,7 +1,7 @@
 from typing import Dict
 from sqlalchemy.orm import Session
 from .base import CRUDBase
-from app.models import StaffTask, StaffTaskMapping
+from app.models import StaffTask, StaffTaskMapping, SubscriberGroup, StaffMember, Users
 from .base import CRUDBase
 from app import crud
 
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 
 class CRUDStaffTasks(CRUDBase):
-    def create(self, db: Session,  obj_in: Dict):
+    def create(self, db: Session, subscriber_group_id: str, obj_in: Dict):
         valid_from = obj_in.get('valid_from')
         datetime_object = datetime.strptime(valid_from, '%d/%m/%y %H:%M')
         staff_emails = obj_in.get('staff_emails')
@@ -20,7 +20,8 @@ class CRUDStaffTasks(CRUDBase):
             priority=obj_in.get('priority'),
             valid_from=datetime_object,
             status='Active',
-            valid_for=obj_in.get('valid_for')
+            valid_for=obj_in.get('valid_for'),
+            subscriber_group_id=subscriber_group_id
         )
         db.add(staff_task_obj)
         db.commit()
@@ -62,6 +63,26 @@ class CRUDStaffTasks(CRUDBase):
 
     def is_active_task(self, task_obj: StaffTask):
         return task_obj.valid_from + timedelta(hours=task_obj.valid_for) < datetime.now() and task_obj.status == 'Active'
+
+    def get_tasks_by_subscriber_grp(self, db: Session, subscriber_grp: SubscriberGroup):
+        staff_tasks = db.query(StaffTask).filter(
+            StaffTask.subscriber_group == subscriber_grp).all()
+        tasks_list = []
+        for task in staff_tasks:
+            if self.is_active_task(task_obj=task):
+                staff_details_list = []
+                staff_task_mapper_objs = db.query(StaffTaskMapping).filter(
+                    StaffTaskMapping.task == task).all()
+                for obj in staff_task_mapper_objs:
+                    staff_member_obj = db.query(StaffMember).filter(
+                        StaffMember.id == obj.staff_id).first()
+                    user_obj = crud.user.get_user_details(
+                        db=db, email=staff_member_obj.user_email)
+                    staff_details_list.append(user_obj)
+                task_dict = {**task.__dict__,
+                             "staff_details": staff_details_list}
+                tasks_list.append(task_dict)
+        return tasks_list
 
 
 staff_tasks = CRUDStaffTasks()
