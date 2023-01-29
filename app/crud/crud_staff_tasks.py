@@ -51,6 +51,9 @@ class CRUDStaffTasks(CRUDBase):
                 StaffTask.id == task_id).first()
             if self.is_active_task(task_obj=staff_task_obj):
                 active_tasks.append(staff_task_obj)
+        staff_user_details = crud.user.get_user_details(
+            db=db, email=user_email)
+        active_tasks.append({"staff_details": staff_user_details})
         return active_tasks
 
     def update_status(self, db: Session, task_id: str, status: str):

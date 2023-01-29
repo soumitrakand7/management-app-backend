@@ -10,3 +10,4 @@ from .staff_attendance import StaffAttendance
 from .staff_absences import StaffAbsence
 from .staff_task import StaffTask
 from .staff_task_mapping import StaffTaskMapping
+from .staff_leaves import StaffLeave

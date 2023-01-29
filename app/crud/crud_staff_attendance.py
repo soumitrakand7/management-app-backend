@@ -16,6 +16,7 @@ class CRUDStaffAttendance(CRUDBase):
     def check_in(self, db: Session, user_email: str):
         staff_member_obj = db.query(StaffMember).filter(
             StaffMember.user_email == user_email).first()
+        
         staff_attendance_obj = db.query(StaffAttendance).filter(
             StaffAttendance.staff_id == staff_member_obj.id).order_by(StaffAttendance.date.desc()).first()
 
