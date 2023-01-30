@@ -28,7 +28,7 @@ class CRUDStaffTasks(CRUDBase):
         db.refresh(staff_task_obj)
 
         for member_email in staff_emails:
-            staff_member_obj = crud.staff_attendance.get(
+            staff_member_obj = crud.staff_management.get(
                 db=db, user_email=member_email)
             db_obj = StaffTaskMapping(
                 task_id=staff_task_obj.id,
@@ -39,8 +39,12 @@ class CRUDStaffTasks(CRUDBase):
 
         return staff_task_obj
 
+    def get_task(self, db: Session, task_id: str):
+        task = db.query(StaffTask).filter(StaffTask.id == task_id).first()
+        return task
+
     def get_all_tasks(self, db: Session, user_email: str):
-        staff_member_obj = crud.staff_attendance.get(
+        staff_member_obj = crud.staff_management.get(
             db=db, user_email=user_email)
         staff_task_mapped_objs = db.query(StaffTaskMapping).filter(
             StaffTaskMapping.staff_id == staff_member_obj.id).all()
@@ -86,6 +90,11 @@ class CRUDStaffTasks(CRUDBase):
                              "staff_details": staff_details_list}
                 tasks_list.append(task_dict)
         return tasks_list
+
+    def update_task(self, db: Session, task_id: str, fields: Dict):
+        staff_task = self.get_task(db=db, task_id=task_id)
+        updated_tsdk = super().update(db=db, db_obj=staff_task, obj_in=fields)
+        return updated_tsdk
 
 
 staff_tasks = CRUDStaffTasks()

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from .endpoints import (users, login, subscription_plan,
-                        subscriber, profiles, staff)
+from .endpoints import (staff_attendance, users, login, subscription_plan,
+                        subscriber, profiles, satff_tasks, staff_leaves)
 
 api_router = APIRouter()
 
@@ -14,4 +14,9 @@ api_router.include_router(
     subscriber.router, prefix="/subscriber", tags=["subscriber"])
 api_router.include_router(
     profiles.router, prefix="/profile", tags=["profiles"])
-api_router.include_router(staff.router, prefix="/staff", tags=["staff"])
+api_router.include_router(
+    staff_attendance.router, prefix="/staff-attendance", tags=["staff-attendance"])
+api_router.include_router(
+    satff_tasks.router, prefix="/staff-task", tags=["staff-task"])
+api_router.include_router(
+    staff_leaves.router, prefix="/staff-leave", tags=["staff-leave"])

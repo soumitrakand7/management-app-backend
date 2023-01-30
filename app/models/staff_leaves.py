@@ -11,5 +11,6 @@ class StaffLeave(Base):
     reason = Column(Text)
     starting_date = Column(DateTime)
     ending_date = Column(DateTime)
-    status = Column(String(32), nullable=False)
+    status = Column(String(32), nullable=False) # awaiting / approved / rejected
+
     staff_member = relationship("StaffMember", foreign_keys=[staff_id])
