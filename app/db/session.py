@@ -35,7 +35,8 @@ db = SessionLocal()
 def create_scheduler_log(job_name):
     def inner(func):
         def wrap(*args, **kwargs):
-            start_time = datetime.datetime.now()
+            start_time = datetime.str(
+                datetime.now(tz=ZoneInfo('Asia/Kolkata')))
             try:
                 response = func(*args, **kwargs)
                 status = 1
@@ -44,7 +45,7 @@ def create_scheduler_log(job_name):
                 response = None
                 status = 0
                 log = traceback.format_exc()
-            end_time = datetime.datetime.now()
+            end_time = datetime.str(datetime.now(tz=ZoneInfo('Asia/Kolkata')))
             scheduler_log.create(db=db, job_name=job_name, start_time=start_time,
                                  end_time=end_time, status=status, log=log)
             return response

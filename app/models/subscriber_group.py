@@ -4,13 +4,15 @@ from ..db.base_class import default_pk
 
 from datetime import datetime
 from ..db.base_class import Base
+from backports.zoneinfo import ZoneInfo
 
 
 class SubscriberGroup(Base):
     id = Column(String(36), primary_key=True, default=default_pk)
     admin_email = Column(String(36), ForeignKey("users.email"))
     plan_id = Column(String(36), ForeignKey("subscriptionplan.id"))
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=str(
+        datetime.now(tz=ZoneInfo('Asia/Kolkata'))))
     valid_until = Column(DateTime, nullable=False)
     member_count = Column(Float, nullable=False, index=True)
 

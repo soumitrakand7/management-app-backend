@@ -4,6 +4,8 @@ from .base import CRUDBase
 from app.models import StaffTask, StaffTaskMapping, SubscriberGroup, StaffMember, Users
 from .base import CRUDBase
 from app import crud
+from backports.zoneinfo import ZoneInfo
+
 
 from datetime import datetime, timedelta
 
@@ -11,14 +13,15 @@ from datetime import datetime, timedelta
 class CRUDStaffTasks(CRUDBase):
     def create(self, db: Session, subscriber_group_id: str, obj_in: Dict):
         valid_from = obj_in.get('valid_from')
-        datetime_object = datetime.strptime(valid_from, '%d/%m/%y %H:%M')
+        datetime_object = datetime.strptime(
+            valid_from, '%d/%m/%y %H:%M').replace(tzinfo=ZoneInfo('Asia/Kolkata'))
         staff_emails = obj_in.get('staff_emails')
         staff_task_obj = StaffTask(
             task_title=obj_in.get('task_title'),
             description=obj_in.get('description'),
-            assigned_at=datetime.now(),
+            assigned_at=str(datetime.now(tz=ZoneInfo('Asia/Kolkata'))),
             priority=obj_in.get('priority'),
-            valid_from=datetime_object,
+            valid_from=str(datetime_object),
             status='Active',
             valid_for=obj_in.get('valid_for'),
             subscriber_group_id=subscriber_group_id
@@ -69,7 +72,7 @@ class CRUDStaffTasks(CRUDBase):
         return task_obj
 
     def is_active_task(self, task_obj: StaffTask):
-        return task_obj.valid_from + timedelta(hours=task_obj.valid_for) < datetime.now() and task_obj.status == 'Active'
+        return task_obj.valid_from + timedelta(hours=task_obj.valid_for) < str(datetime.now(tz=ZoneInfo('Asia/Kolkata'))) and task_obj.status == 'Active'
 
     def get_tasks_by_subscriber_grp(self, db: Session, subscriber_grp: SubscriberGroup):
         staff_tasks = db.query(StaffTask).filter(

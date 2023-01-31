@@ -4,6 +4,7 @@ from ..models.reset_password_request import ResetPasswordRequest
 import datetime
 import jinja2
 from integrations import mailer
+from backports.zoneinfo import ZoneInfo
 
 
 class CRUDResetPasswordRequest(CRUDBase):
@@ -17,7 +18,8 @@ class CRUDResetPasswordRequest(CRUDBase):
         reset_pass_obj = ResetPasswordRequest(
             user_email=email,
             reset_code=reset_code,
-            validity=datetime.datetime.now() + datetime.timedelta(hours=30)
+            validity=datetime.str(datetime.now(tz=ZoneInfo(
+                'Asia/Kolkata'))) + datetime.timedelta(hours=30)
         )
         db.add(reset_pass_obj)
         db.commit()
@@ -44,7 +46,7 @@ class CRUDResetPasswordRequest(CRUDBase):
         password_reset_requests = db.query(ResetPasswordRequest) \
             .filter(ResetPasswordRequest.user_email == email) \
             .filter(ResetPasswordRequest.reset_code == reset_code) \
-            .filter(ResetPasswordRequest.validity >= datetime.datetime.now()).all()
+            .filter(ResetPasswordRequest.validity >= datetime.str(datetime.now(tz=ZoneInfo('Asia/Kolkata')))).all()
         if len(password_reset_requests) > 0:
             return True
         else:

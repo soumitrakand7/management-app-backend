@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from ... import crud, models
 from ...models import StaffMember, StaffAttendance, StaffAbsence
 from .. import deps
+from backports.zoneinfo import ZoneInfo
 
 from datetime import datetime
 
@@ -94,10 +95,11 @@ def check_abscences(
     for member in staff_members:
         staff_att_obj = db.query(StaffAttendance).filter(
             StaffAttendance.staff_id == member.id).order_by(StaffAttendance.date.desc()).first()
-        if staff_att_obj.date != datetime.now().date:
+        if staff_att_obj.date != str(datetime.now(tz=ZoneInfo('Asia/Kolkata'))).date:
             staff_absence_obj = StaffAbsence(
                 staff_id=member.id,
-                abscence_date=datetime.now().date
+                abscence_date=str(datetime.now(
+                    tz=ZoneInfo('Asia/Kolkata'))).date
             )
             db.add(staff_absence_obj)
             db.commit()
