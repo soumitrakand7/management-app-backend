@@ -11,3 +11,5 @@ from .staff_absences import StaffAbsence
 from .staff_task import StaffTask
 from .staff_task_mapping import StaffTaskMapping
 from .staff_leaves import StaffLeave
+from .chat_room import ChatRoom
+from .chats import Chats

@@ -72,7 +72,14 @@ class CRUDStaffTasks(CRUDBase):
         return task_obj
 
     def is_active_task(self, task_obj: StaffTask):
-        return task_obj.valid_from + timedelta(hours=task_obj.valid_for) < str(datetime.now(tz=ZoneInfo('Asia/Kolkata'))) and task_obj.status == 'Active'
+        if task_obj.task_title == 'hello':
+            print(task_obj.valid_from)
+            print("##### " + str(task_obj.valid_from.replace(tzinfo=ZoneInfo(
+                'Asia/Kolkata'))))
+        x = task_obj.valid_from.replace(tzinfo=ZoneInfo(
+            'Asia/Kolkata')) + timedelta(hours=task_obj.valid_for)
+        # print(task_obj.valid_from)
+        return x > datetime.now(tz=ZoneInfo('Asia/Kolkata')) and task_obj.status == 'Active'
 
     def get_tasks_by_subscriber_grp(self, db: Session, subscriber_grp: SubscriberGroup):
         staff_tasks = db.query(StaffTask).filter(
@@ -96,8 +103,19 @@ class CRUDStaffTasks(CRUDBase):
 
     def update_task(self, db: Session, task_id: str, fields: Dict):
         staff_task = self.get_task(db=db, task_id=task_id)
-        updated_tsdk = super().update(db=db, db_obj=staff_task, obj_in=fields)
-        return updated_tsdk
+        for key in fields:
+            if key == 'valid_from':
+                valid_from = fields['valid_from']
+                datetime_object = datetime.strptime(
+                    valid_from, '%d/%m/%y %H:%M').replace(tzinfo=ZoneInfo('Asia/Kolkata'))
+                setattr(staff_task, 'valid_from', str(datetime_object))
+            else:
+                setattr(staff_task, key, fields[key])
+        db.add(staff_task)
+        db.commit()
+        db.refresh(staff_task)
+
+        return staff_task
 
 
 staff_tasks = CRUDStaffTasks()

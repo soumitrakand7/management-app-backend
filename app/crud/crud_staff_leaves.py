@@ -61,9 +61,16 @@ class CRUDStaffLeaves(CRUDBase):
             db=db, subscriber_group_id=subscriber_group_id)
         staff_leaves_list = []
         for member in staff_members:
+            staff_details = crud.user.get_user_details(
+                db=db, email=member.user_email)
             leave_applications = db.query(StaffLeave).filter(
                 StaffLeave.staff_id == member.id).all()
-            staff_leaves_list.append(leave_applications)
+            for appl in leave_applications:
+                staff_leaves_list.append({
+                    "leave_application": appl,
+                    "staff_details": staff_details
+                })
+
         return staff_leaves_list
 
 
