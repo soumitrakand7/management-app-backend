@@ -10,6 +10,7 @@ class Settings:
         "SQL_HOST", "test-db.cnmbyuipzpkl.us-east-1.rds.amazonaws.com")
     SQL_DB = os.environ.get("SQL_DB", "db1")
 
+    SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "soumitrakand3@gmail.com")
     EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "ciekkwjqjmxuclcb")
 
     AWS_S3_ACCESS_KEY = os.environ.get(

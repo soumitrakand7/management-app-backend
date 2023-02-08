@@ -7,4 +7,5 @@ EXPOSE 8080
 COPY ./app app
 COPY ./integrations integrations
 COPY ./templates templates
+COPY ./static /static
 CMD ["python3", "main.py"]

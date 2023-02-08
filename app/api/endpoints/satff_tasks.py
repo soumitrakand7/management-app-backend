@@ -67,3 +67,21 @@ def update_task(
     updated_task = crud.staff_tasks.update_task(
         db=db, fields=task_details, task_id=task_details.get('task_id'))
     return updated_task
+
+
+@router.put("/update-task-by-staff")
+def update_task(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user),
+    task_details: Dict
+):
+    user_obj = crud.user.get_by_email(db=db, email=current_user)
+    if user_obj.profile != 'staff':
+        raise HTTPException(
+            status_code=403,
+            detail="Incorrect Profile",
+        )
+    updated_task = crud.staff_tasks.update_status(
+        db=db, status=task_details.get('status'), task_id=task_details.get('task_id'))
+    return updated_task
