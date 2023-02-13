@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 from ... import crud, models
 from ...models import StaffMember, StaffAttendance, StaffAbsence
 from .. import deps
+from backports.zoneinfo import ZoneInfo
 
 from datetime import datetime
-
 
 router = APIRouter()
 
@@ -84,35 +84,6 @@ def get_attendance_status(
     return absences
 
 
-@router.post("/create-task")
-def create_task(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.Users = Depends(deps.get_current_user),
-    task_dict: Dict
-):
-    user_obj = crud.user.get_by_email(db=db, email=current_user)
-    if user_obj.profile != 'staff':
-        raise HTTPException(
-            status_code=403,
-            detail="Incorrect Profile",
-        )
-    task_obj = crud.staff_tasks.create(
-        db=db, obj_in=task_dict, user_email=current_user)
-    return task_obj
-
-
-@router.get("/get-tasks")
-def get_tasks(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: models.Users = Depends(deps.get_current_user),
-):
-    staff_tasks = crud.staff_tasks.get_all_tasks(
-        db=db, user_email=current_user)
-    return staff_tasks
-
-
 @create_scheduler_log(job_name="Check Abscences")
 def check_abscences(
     *,
@@ -124,10 +95,11 @@ def check_abscences(
     for member in staff_members:
         staff_att_obj = db.query(StaffAttendance).filter(
             StaffAttendance.staff_id == member.id).order_by(StaffAttendance.date.desc()).first()
-        if staff_att_obj.date != datetime.now().date:
+        if staff_att_obj.date != str(datetime.now(tz=ZoneInfo('Asia/Kolkata'))).date:
             staff_absence_obj = StaffAbsence(
                 staff_id=member.id,
-                abscence_date=datetime.now().date
+                abscence_date=str(datetime.now(
+                    tz=ZoneInfo('Asia/Kolkata'))).date
             )
             db.add(staff_absence_obj)
             db.commit()

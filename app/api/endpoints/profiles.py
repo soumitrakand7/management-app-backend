@@ -51,6 +51,44 @@ def get_family_tree(
     return family_tree
 
 
+@router.get("/get-staff-members")
+def get_staff_members(
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user)
+):
+    user_obj = crud.user.get_by_email(db=db, email=current_user)
+    # if user_obj.profile != 'admin':
+    #     raise HTTPException(
+    #         status_code=403,
+    #         detail="Insufficient Rights",
+    #     )
+    staff_members = crud.staff_management.get_members_by_subscriber_group(
+        db=db, subscriber_group_id=user_obj.subscriber_group_id)
+    members_list = []
+    for member in staff_members:
+        member_dict = member.__dict__
+        user_details = crud.user.get_user_details(
+            db=db, email=member.user_email)
+        member_dict['profile_image_url'] = user_details.get(
+            'profile_image_url')
+        member_dict['full_name'] = user_details.get('full_name')
+        members_list.append(member_dict)
+    return members_list
+
+
+@router.get("/get-staff-tree")
+def get_staff_tree(
+    db: Session = Depends(deps.get_db),
+    current_user: models.Users = Depends(deps.get_current_user)
+):
+    user_obj = crud.user.get_by_email(db=db, email=current_user)
+    staff_tree = crud.staff_tree.get_staff_tree(
+        db=db, subscriber_group_id=user_obj.subscriber_group_id)
+    print(user_obj.full_name)
+    print(user_obj.subscriber_group_id)
+    return staff_tree
+
+
 @router.put("/update-node")
 def update_node(
     node_dict: Dict,

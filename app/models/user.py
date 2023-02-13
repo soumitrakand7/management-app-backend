@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from datetime import datetime
 from ..db.base_class import Base
+from backports.zoneinfo import ZoneInfo
 
 
 class Users(Base):
@@ -15,7 +16,8 @@ class Users(Base):
     is_active = Column(Boolean(), default=False)
     profile_image_url = Column(Text, nullable=True)
     activation_code = Column(Float)
-    registration_date = Column(DateTime, default=datetime.now())
+    registration_date = Column(DateTime, default=str(
+        datetime.now(tz=ZoneInfo('Asia/Kolkata'))))
     profile = Column(String(36), index=True)  # admin / staff / guest / family
     bank_ifsc = Column(Text)
     bank_account_no = Column(Text)

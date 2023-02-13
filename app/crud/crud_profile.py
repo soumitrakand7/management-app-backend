@@ -41,11 +41,20 @@ class CRUDProfile(CRUDBase):
             staff_obj = StaffMember(
                 user_email=db_obj.email,
                 designation=obj_in.get('designation'),
-                job_details=obj_in.get('job_details')
+                job_details=obj_in.get('job_details'),
+                employment_status='Employed'
             )
             db.add(staff_obj)
             db.commit()
             db.refresh(staff_obj)
+
+            crud.staff_tree.create(
+                db=db,
+                first_staff_id=staff_obj.id,
+                second_staff_id=obj_in.get('staff_id'),
+                relation_tag=obj_in.get('designation'),
+                subscriber_group_id=subscriber_group_id
+            )
 
         elif profile == 'guest':
             guest_obj = GuestMember(

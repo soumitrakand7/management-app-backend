@@ -10,6 +10,7 @@ from app import crud
 import jinja2
 
 import random
+from backports.zoneinfo import ZoneInfo
 
 
 class CRUDUser(CRUDBase):
@@ -71,7 +72,7 @@ class CRUDUser(CRUDBase):
 
     def activate_user(self, db: Session, user_obj: Users, activation_code: int) -> bool:
         minutes = divmod(
-            (datetime.now() - user_obj.registration_date).total_seconds(), 60)[0]
+            (datetime.now(tz=ZoneInfo('Asia/Kolkata')) - user_obj.registration_date).total_seconds(), 60)[0]
         success = user_obj.activation_code == activation_code
         if success:
             setattr(user_obj, 'is_active', True)
