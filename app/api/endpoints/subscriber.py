@@ -14,7 +14,7 @@ def create_subscriber_group(
     plan_dict: Dict,
     db: Session = Depends(deps.get_db),
     current_user: models.Users = Depends(deps.get_current_user),
-) -> Any:
+):
     plan_id = plan_dict.get('plan_id')
     plan_obj = crud.sub_plan.get(db=db, plan_id=plan_id)
     admin_profile = crud.user.get_by_email(db=db, email=current_user)
@@ -28,9 +28,10 @@ def create_subscriber_group(
             status_code=404,
             detail="Invalid id or plan does not exist"
         )
-    updated_user_obj = crud.sub_plan.create_subscription_group(
+    subscriber_grp_obj = crud.sub_plan.create_subscription_group(
         db=db, subscription_plan_obj=plan_obj, admin_profile=admin_profile)
-    return updated_user_obj
+    print(subscriber_grp_obj)
+    return subscriber_grp_obj
 
 
 @router.get("/get")

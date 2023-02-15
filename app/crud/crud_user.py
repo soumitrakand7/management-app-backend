@@ -71,8 +71,10 @@ class CRUDUser(CRUDBase):
         return user_dict
 
     def activate_user(self, db: Session, user_obj: Users, activation_code: int) -> bool:
+        print(user_obj.registration_date)
+        print(datetime.now())
         minutes = divmod(
-            (datetime.now(tz=ZoneInfo('Asia/Kolkata')) - user_obj.registration_date).total_seconds(), 60)[0]
+            (datetime.now() - user_obj.registration_date).total_seconds(), 60)[0]
         success = user_obj.activation_code == activation_code
         if success:
             setattr(user_obj, 'is_active', True)
