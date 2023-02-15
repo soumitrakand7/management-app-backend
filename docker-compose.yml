@@ -5,7 +5,11 @@ services:
     build: .
     volumes:
       - ./:/app
+      - static_vol:/app/static/temp
     image: app:fastapi
     container_name: fastapi-application
     ports:
       - "8000:8000"
+
+volumes:
+  static_vol:

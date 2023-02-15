@@ -31,9 +31,7 @@ class CRUDSubscriptions(CRUDBase):
             print(plan)
         return sub_plans
 
-    def create_subscription_group(self, db: Session, admin_profile: Users, subscription_plan_obj: SubscriptionPlan) -> Any:
-        print(admin_profile.email)
-        print(subscription_plan_obj.id)
+    def create_subscription_group(self, db: Session, admin_profile: Users, subscription_plan_obj: SubscriptionPlan):
         subscriber_grp_obj = SubscriberGroup(
             admin_email=admin_profile.email,
             plan_id=subscription_plan_obj.id,
@@ -48,6 +46,7 @@ class CRUDSubscriptions(CRUDBase):
         db.add(admin_profile)
         db.commit()
         db.refresh(admin_profile)
+        print(subscriber_grp_obj)
         return subscriber_grp_obj
 
     def get_subscriber_group(self, db: Session, subscriber_group_id: str):

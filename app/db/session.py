@@ -15,12 +15,8 @@ sql_db = settings.SQL_DB
 sql_connection_str = "sqlite:///./sql_app.db"
 
 
-sql_connection_str = "postgresql+psycopg2://{sql_user}:{sql_password}@{sql_host}/{sql_db}".format(
-    sql_user=sql_user,
-    sql_password=sql_password,
-    sql_host=sql_host,
-    sql_db=sql_db
-)
+sql_connection_str = "postgresql+psycopg2://postgres:l4ooCMDdtscukxim3WQc@containers-us-west-56.railway.app:7358/railway"
+
 
 engine = create_engine(
     sql_connection_str, pool_pre_ping=True, future=True
