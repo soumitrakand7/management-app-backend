@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['staff_id'], ['staffmember.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.drop_table('staffabscence')
+    # op.drop_table('staffabscence')
     op.add_column('staffattendance', sa.Column('check_in_time', sa.Time(), nullable=True))
     op.add_column('staffattendance', sa.Column('check_out_time', sa.Time(), nullable=True))
     op.drop_column('staffattendance', 'out_time')

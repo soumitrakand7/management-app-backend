@@ -13,8 +13,12 @@ from datetime import datetime, timedelta
 class CRUDStaffTasks(CRUDBase):
     def create(self, db: Session, subscriber_group_id: str, obj_in: Dict):
         valid_from = obj_in.get('valid_from')
+        valid_for = obj_in.get('valid_for')
+
         datetime_object = datetime.strptime(
             valid_from, '%d/%m/%y %H:%M').replace(tzinfo=ZoneInfo('Asia/Kolkata'))
+        valid_till_dt_obj = datetime.strptime(
+            valid_for, '%d/%m/%y %H:%M').replace(tzinfo=ZoneInfo('Asia/Kolkata')) + datetime_object
         staff_emails = obj_in.get('staff_emails')
         staff_task_obj = StaffTask(
             task_title=obj_in.get('task_title'),
@@ -23,7 +27,7 @@ class CRUDStaffTasks(CRUDBase):
             priority=obj_in.get('priority'),
             valid_from=str(datetime_object),
             status='Active',
-            valid_for=obj_in.get('valid_for'),
+            valid_till=valid_till_dt_obj,
             subscriber_group_id=subscriber_group_id
         )
         db.add(staff_task_obj)
@@ -72,12 +76,7 @@ class CRUDStaffTasks(CRUDBase):
         return task_obj
 
     def is_active_task(self, task_obj: StaffTask):
-        if task_obj.task_title == 'hello':
-            print(task_obj.valid_from)
-            print("##### " + str(task_obj.valid_from.replace(tzinfo=ZoneInfo(
-                'Asia/Kolkata'))))
-        x = task_obj.valid_from.replace(tzinfo=ZoneInfo(
-            'Asia/Kolkata')) + timedelta(hours=task_obj.valid_for)
+        x = task_obj.valid_till
         # print(task_obj.valid_from)
         return x > datetime.now(tz=ZoneInfo('Asia/Kolkata')) and task_obj.status == 'Active'
 

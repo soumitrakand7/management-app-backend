@@ -31,7 +31,8 @@ def create_subscriber_group(
     subscriber_grp_obj = crud.sub_plan.create_subscription_group(
         db=db, subscription_plan_obj=plan_obj, admin_profile=admin_profile)
     print(subscriber_grp_obj)
-    return subscriber_grp_obj
+    print(subscriber_grp_obj.admin_email)
+    return subscriber_grp_obj.__dict__
 
 
 @router.get("/get")

@@ -10,8 +10,8 @@ class StaffTask(Base):
     task_title = Column(String(36), nullable=False, index=True)
     description = Column(Text)
     assigned_at = Column(DateTime)
-    valid_for = Column(Float)
     valid_from = Column(DateTime)
+    valid_till = Column(DateTime)
     priority = Column(String(24), nullable=False)
     status = Column(String(36))  # Active / Cancelled / Completed / Expired
 

@@ -12,7 +12,7 @@ sql_password = settings.SQL_PASSWORD
 sql_host = settings.SQL_HOST
 sql_db = settings.SQL_DB
 
-sql_connection_str = "sqlite:///./sql_app.db"
+# sql_connection_str = "sqlite:///./sql_app.db"
 
 
 sql_connection_str = "postgresql+psycopg2://postgres:l4ooCMDdtscukxim3WQc@containers-us-west-56.railway.app:7358/railway"

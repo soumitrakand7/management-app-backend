@@ -29,7 +29,8 @@ if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
 
 
-# sched = BackgroundScheduler({'apscheduler.timezone': 'Asia/Kolkata'})
-# sched.add_job(check_abscences, CronTrigger.from_crontab("15 1 * * *"))
+sched = BackgroundScheduler()
+sched.add_job(check_abscences, CronTrigger.from_crontab("15 1 * * *"))
 
-# sched.start()
+
+sched.start()
